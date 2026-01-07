@@ -26,8 +26,10 @@ export const connectDatabase = async (): Promise<typeof mongoose> => {
     // Connect with optimized settings for serverless
     const connection = await mongoose.connect(mongoUri, {
       maxPoolSize: 10,
-      serverSelectionTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 30000, // Increased to 30 seconds for serverless cold starts
       socketTimeoutMS: 45000,
+      connectTimeoutMS: 30000,
+      family: 4, // Use IPv4, skip trying IPv6
     });
 
     cachedConnection = connection;
@@ -36,8 +38,13 @@ export const connectDatabase = async (): Promise<typeof mongoose> => {
     console.log(`📦 Database: ${mongoose.connection.name}`);
     
     return connection;
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ MongoDB Connection Error:', error);
+    console.error('Error details:', {
+      name: error.name,
+      message: error.message,
+      code: error.code,
+    });
     // Don't call process.exit in serverless environment
     throw error;
   }
