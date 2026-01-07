@@ -24,8 +24,10 @@ import monthlyRevenueRoutes from './routes/monthlyRevenueRoutes';
 // Initialize Express app
 const app: Application = express();
 
-// Connect to database
-connectDatabase();
+// Connect to database (async for serverless)
+connectDatabase().catch((err) => {
+  console.error('Failed to connect to database:', err);
+});
 
 // Middleware
 app.use(cors());
@@ -84,12 +86,14 @@ app.get('/', (_req, res) => {
 app.use(notFound);
 app.use(errorHandler);
 
-// Start server
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-  console.log(`🚀 Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
-});
+// Start server (only in non-serverless environments)
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  const PORT = process.env.PORT || 5000;
+  
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+  });
+}
 
 export default app;
 
