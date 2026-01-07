@@ -61,6 +61,11 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Handle OPTIONS preflight requests explicitly
+app.options('*', (_req, res) => {
+  res.status(200).end();
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/employees', employeeRoutes);
